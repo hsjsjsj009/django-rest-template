@@ -154,6 +154,4 @@ dmypy.json
 # profiling data
 .prof
 
-*/__pycache__/
-
 # End of https://www.toptal.com/developers/gitignore/api/django
