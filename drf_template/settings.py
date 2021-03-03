@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+import logging
 import os
 from pathlib import Path
 
@@ -24,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '7r!@xba^!na!_go3s-)+7tsm@th+cj!w64o7(vxx$n26_yz25_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("APP_ENV") != "production"
 
 ALLOWED_HOSTS = []
 
@@ -47,17 +48,64 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'server.middlewares.logger.RequestLoggerMiddleware'
 ]
 
 ROOT_URLCONF = 'drf_template.urls'
 
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} (module: {module}; func_name: {funcName}; {message})',
+            'style': '{',
+        },
+        'simple-request': {
+            'format': "{levelname} (time: {asctime}; status_code:{status_code}; {message})",
+            'style': '{',
+        },
+
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'log_file.log',
+            'formatter': 'verbose'
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'file-request': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'log_file.log',
+            'formatter': 'simple-request'
+        },
+        'console-request': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple-request'
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['file-request', 'console-request'],
+            'level': 'INFO',
+            'propagate': False
+        },
+        'drf_template': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False
+        }
+    }
 }
+
+LOGGER_INSTANCE = logging.getLogger('drf_template')
 
 TEMPLATES = [
     {
@@ -118,7 +166,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Jakarta'
 
 USE_I18N = True
 
@@ -130,10 +178,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
-PATH_WHITE_LIST = [
-    '/api/v1/example/'
-]
 
 JWT = {
     'ALG': 'HS256',

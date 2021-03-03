@@ -1,10 +1,5 @@
-from datetime import datetime, timedelta
-from typing import Union, Tuple, Dict, Any
-
-from django.conf import settings
+from typing import Union, Tuple, Dict
 import usecases.example as example_uc
-
-import jwt
 
 from repository.models import Example
 from server.views.requests.example import LoginData
